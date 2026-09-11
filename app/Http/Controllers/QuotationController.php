@@ -16,7 +16,8 @@ class QuotationController extends Controller
             'fleet' => 'required|string|max:255', 'weight' => 'nullable|string|max:255',
             'details' => 'nullable|string|max:5000',
         ]);
-        QuotationRequest::create($data);
+        $quotation = QuotationRequest::create($data);
+        $request->session()->flash('quotation_conversion', 'quote-'.$quotation->id);
 
         return back()->with('quotation_success', 'Permintaan Anda sudah diterima. Tim kami akan menghubungi Anda.');
     }

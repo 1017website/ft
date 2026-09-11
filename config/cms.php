@@ -1,6 +1,6 @@
 <?php
 
-return [
+$sections = [
     'header' => [
         'title' => 'Logo & menu',
         'fields' => [
@@ -862,3 +862,5 @@ transport partner?',
         ],
     ],
 ];
+
+return require __DIR__.'/../resources/cms/extensions.php';

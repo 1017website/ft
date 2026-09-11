@@ -42,7 +42,7 @@ Artisan::command('cms:serve {--port=8000}', function () {
     $this->info('Website: http://127.0.0.1:'.$port.' | CMS: http://127.0.0.1:'.$port.'/admin');
     $process = new Process([
         PHP_BINARY, '-d', 'upload_max_filesize=5M', '-d', 'post_max_size=64M',
-        '-d', 'max_file_uploads=40', '-S', '127.0.0.1:'.$port,
+        '-d', 'max_file_uploads=100', '-d', 'max_input_vars=10000', '-S', '127.0.0.1:'.$port,
         base_path('vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php'),
     ], public_path());
     $process->setTimeout(null);

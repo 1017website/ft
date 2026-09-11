@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#202722">
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="icon" href="{{ asset($cmsBranding['favicon']) }}">
     <title>@yield('title', 'Ringkasan') | FT Logistik CMS</title>
     <link rel="preload" href="{{ asset('assets/admin/fonts/jakarta-400.ttf') }}" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="{{ asset('assets/admin/admin.css') }}?v={{ filemtime(public_path('assets/admin/admin.css')) }}">
@@ -14,10 +16,11 @@
 @auth
 <button class="sidebar-overlay" data-menu-close aria-label="Tutup menu" tabindex="-1" hidden></button>
 <aside class="sidebar" id="sidebar" aria-label="Navigasi CMS">
-    <div class="sidebar-brand"><a href="{{ route('admin.index') }}"><span class="brand-mark">FT<span>.</span></span><span>Logistik<small>Content management</small></span></a><button class="mobile-close icon-button" data-menu-close aria-label="Tutup menu">@include('admin.icon', ['icon' => 'close'])</button></div>
+    <div class="sidebar-brand"><a href="{{ route('admin.index') }}"><img class="cms-logo" src="{{ asset($cmsBranding['cms_logo']) }}" alt="Logo CMS" style="width:{{ (int)$cmsBranding['cms_width'] }}px"></a><button class="mobile-close icon-button" data-menu-close aria-label="Tutup menu">@include('admin.icon', ['icon' => 'close'])</button></div>
     <div class="workspace-label"><span class="site-dot"></span>Website perusahaan</div>
     <nav aria-label="Menu pengelolaan">
         <p class="nav-label">Workspace</p>
+        <a href="{{ route('admin.statistics') }}" @class(['nav-link', 'active' => request()->routeIs('admin.statistics')])>@include('admin.icon', ['icon' => 'chart'])<span>Statistik pengunjung</span></a>
         <a href="{{ route('admin.index') }}" @class(['nav-link', 'active' => request()->routeIs('admin.index')]) @if(request()->routeIs('admin.index')) aria-current="page" @endif>@include('admin.icon', ['icon' => 'grid'])<span>Ringkasan</span></a>
         <a href="{{ route('admin.requests') }}" @class(['nav-link', 'active' => request()->routeIs('admin.requests*')])>@include('admin.icon', ['icon' => 'inbox'])<span>Permintaan penawaran</span></a>
         <p class="nav-label">Konten website</p>
@@ -35,7 +38,7 @@
         <div class="breadcrumb"><span>Workspace</span><span>/</span><strong>@yield('title', 'Ringkasan')</strong></div>
         <a class="website-link" href="{{ route('home') }}" target="_blank" rel="noopener">Lihat website @include('admin.icon', ['icon' => 'external'])</a>
         @else
-        <a class="guest-brand" href="{{ route('home') }}"><span class="brand-mark">FT<span>.</span></span> Logistik</a>
+        <a class="guest-brand" href="{{ route('home') }}"><img class="cms-logo" src="{{ asset($cmsBranding['cms_logo']) }}" alt="Logo CMS" style="width:{{ (int)$cmsBranding['cms_width'] }}px"></a>
         <a class="website-link" href="{{ route('home') }}">Kembali ke website @include('admin.icon', ['icon' => 'external'])</a>
         @endauth
     </header>

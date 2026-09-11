@@ -9,6 +9,8 @@ return [
         'footer' => ['field_1' => 'Logo footer', 'field_2' => 'Deskripsi logo', 'field_3' => 'Deskripsi perusahaan', 'field_4' => 'Judul menu perusahaan', 'field_5' => 'Menu tentang perusahaan', 'field_6' => 'Menu jangkauan', 'field_7' => 'Menu galeri', 'field_8' => 'Judul menu layanan', 'field_9' => 'Menu trucking', 'field_10' => 'Menu container', 'field_11' => 'Menu LCL / FCL', 'field_12' => 'Judul kontak', 'field_13' => 'Lokasi / alamat', 'field_14' => 'Informasi kontak tambahan', 'field_15' => 'Teks hak cipta', 'field_16' => 'Tagline footer'],
     ],
     'sections' => [
+        'branding' => ['icon' => 'image', 'description' => 'Logo CMS, favicon, dan ukuran logo di berbagai perangkat.'],
+        'integrations' => ['icon' => 'chart', 'description' => 'Google, Meta, Clarity, Tag Manager, dan penempatan iklan.'],
         'header' => ['icon' => 'layout', 'description' => 'Identitas brand dan navigasi pengunjung.'],
         'hero' => ['icon' => 'image', 'description' => 'Gambar pembuka, headline, dan tombol utama.'],
         'stats' => ['icon' => 'chart', 'description' => 'Pengalaman dan kapasitas perusahaan.'],
@@ -20,6 +22,6 @@ return [
         'gallery' => ['icon' => 'images', 'description' => 'Dokumentasi foto dan video operasional.'],
         'cta' => ['icon' => 'send', 'description' => 'Pesan ajakan untuk calon pelanggan.'],
         'footer' => ['icon' => 'layout', 'description' => 'Informasi kontak dan bagian bawah website.'],
-        'settings' => ['icon' => 'settings', 'description' => 'Judul browser dan deskripsi mesin pencari.'],
+        'settings' => ['icon' => 'settings', 'description' => 'Metadata, social sharing, canonical, dan structured data.'],
     ],
 ];

@@ -15,7 +15,7 @@
 
     <div class="gallery-panel active" id="photos">
       <div class="photo-grid">
-        @foreach ($content['gallery']['groups']['photos'] as $item)
+        @foreach (array_slice($content['gallery']['groups']['photos'], 0, (int)$content['gallery']['fields']['photo_limit'] ?: null) as $item)
 <article class="photo-item"><img src="{{ asset($item['field_1']) }}" alt="{{ $item['field_2'] }}"><div class="photo-info"><small>{{ $item['field_3'] }}</small><strong>{{ $item['field_4'] }}</strong></div></article>@endforeach
 
         
@@ -27,7 +27,7 @@
 
     <div class="gallery-panel" id="videos">
       <div class="video-grid">
-        @foreach ($content['gallery']['groups']['videos'] as $item)
+        @foreach (array_slice($content['gallery']['groups']['videos'], 0, (int)$content['gallery']['fields']['video_limit'] ?: null) as $item)
 <article class="video-card" data-title="{{ $item['field_4'] }}" data-poster="{{ asset($item['field_1']) }}" data-video="{{ $item['field_5'] }}"><img src="{{ asset($item['field_1']) }}" alt="{{ $item['field_2'] }}"><div class="play">▶</div><div class="video-info"><small>{{ $item['field_3'] }}</small><strong>{{ $item['field_4'] }}</strong></div></article>@endforeach
 
         

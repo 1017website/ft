@@ -7,6 +7,7 @@ use App\Models\SiteSection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ContentController extends Controller
@@ -19,17 +20,22 @@ class ContentController extends Controller
 
         return view('admin.edit', [
             'section' => $section, 'definition' => $definition,
-            'data' => $record?->content ?? $definition['defaults'],
+            'data' => SiteSection::websiteContent()[$section],
             'version' => $record?->version() ?? '',
         ]);
     }
 
-    public function update(Request $request, string $section)
+    public function preview(Request $request, string $section)
+    {
+        return $this->update($request, $section, true);
+    }
+
+    public function update(Request $request, string $section, bool $preview = false)
     {
         $definition = config('cms.'.$section);
         abort_unless($definition, 404);
         $record = SiteSection::find($section);
-        if ($request->input('version', '') !== ($record?->version() ?? '')) {
+        if (! $preview && $request->input('version', '') !== ($record?->version() ?? '')) {
             throw ValidationException::withMessages(['version' => 'Konten sudah berubah di tab lain. Muat ulang halaman sebelum menyimpan.']);
         }
         $rules = ['fields' => 'nullable|array', 'groups' => 'nullable|array'];
@@ -42,8 +48,14 @@ class ContentController extends Controller
                     'latitude' => 'required|numeric|between:-90,90',
                     'longitude' => 'required|numeric|between:-180,180',
                     'url' => ['nullable', 'url:http,https', 'max:2048'],
+                    'email' => 'nullable|email|max:255',
+                    'number' => ['required', 'integer', 'between:'.($field['min'] ?? 0).','.($field['max'] ?? 100)],
+                    'select' => ['required', Rule::in(array_keys($field['options']))],
                     default => 'nullable|string|max:5000',
                 };
+                if (isset($field['pattern'])) {
+                    $rules[$path] = ['nullable', 'string', 'max:255', 'regex:~'.$field['pattern'].'~'];
+                }
                 $labels[$path] = $field['label'];
                 if ($field['type'] === 'image') {
                     $rules['uploads.'.$path] = 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120';
@@ -53,7 +65,7 @@ class ContentController extends Controller
         };
         $addRules($definition['fields'], 'fields');
         foreach ($definition['groups'] as $key => $group) {
-            $rules['groups.'.$key] = 'nullable|array|max:40';
+            $rules['groups.'.$key] = 'nullable|array|max:100';
             $addRules($group['fields'], 'groups.'.$key.'.*');
         }
         $validated = Validator::make($request->all(), $rules, [
@@ -63,14 +75,24 @@ class ContentController extends Controller
             'mimes' => ':attribute harus JPG, PNG, atau WebP.',
             'between' => ':attribute harus antara :min dan :max.',
             'url' => ':attribute harus berupa alamat http:// atau https:// yang valid.',
+            'regex' => 'Format :attribute belum sesuai. Periksa contoh pada kolom tersebut.',
         ], $labels)->validate();
         $created = [];
-        $collect = function ($fields, $prefix) use ($request, $validated, &$created) {
+        $previewImages = [];
+        $collect = function ($fields, $prefix) use ($request, $validated, &$created, $preview, &$previewImages) {
             $result = [];
             foreach ($fields as $key => $field) {
                 $path = $prefix.'.'.$key;
                 $result[$key] = data_get($validated, $path) ?? '';
                 if ($field['type'] === 'image' && $request->hasFile('uploads.'.$path)) {
+                    if ($preview) {
+                        $file = $request->file('uploads.'.$path);
+                        $token = 'assets/cms-preview/image-'.count($previewImages);
+                        $previewImages[asset($token)] = 'data:'.$file->getMimeType().';base64,'.base64_encode(file_get_contents($file->getRealPath()));
+                        $result[$key] = $token;
+
+                        continue;
+                    }
                     $stored = $request->file('uploads.'.$path)->store('cms', 'public');
                     $created[] = $stored;
                     $result[$key] = 'storage/'.$stored;
@@ -86,6 +108,13 @@ class ContentController extends Controller
                     $content['groups'][$key][] = $collect($group['fields'], 'groups.'.$key.'.'.$index);
                 }
                 $content['groups'][$key] ??= [];
+            }
+            if ($preview) {
+                $website = SiteSection::websiteContent();
+                $website[$section] = $content;
+                $html = view('pages.home.index', ['content' => $website, 'cmsPreview' => true, 'previewSection' => $section])->render();
+
+                return response(strtr($html, $previewImages))->header('Cache-Control', 'no-store')->header('X-Robots-Tag', 'noindex, nofollow');
             }
             SiteSection::updateOrCreate(['key' => $section], ['content' => $content]);
         } catch (\Throwable $exception) {

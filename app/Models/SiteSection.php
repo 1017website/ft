@@ -25,7 +25,13 @@ class SiteSection extends Model
     {
         $saved = static::all()->keyBy('key');
 
-        return collect(config('cms'))->map(fn ($definition, $key) => $saved->get($key)?->content ?? $definition['defaults']
-        )->all();
+        return collect(config('cms'))->map(function ($definition, $key) use ($saved) {
+            $content = $saved->get($key)?->content ?? [];
+
+            return [
+                'fields' => array_replace($definition['defaults']['fields'], $content['fields'] ?? []),
+                'groups' => array_replace($definition['defaults']['groups'], $content['groups'] ?? []),
+            ];
+        })->all();
     }
 }

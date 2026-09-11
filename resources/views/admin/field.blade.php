@@ -21,16 +21,20 @@
             <div class="upload-info"><span data-file-info>{{ $value ? 'Gambar tersimpan. Pilih file untuk menggantinya.' : 'Belum ada gambar yang dipilih.' }}</span><button class="quiet" type="button" data-upload-reset hidden>Batalkan</button></div>
             <p id="{{ $id }}-error" class="upload-error" data-upload-error role="alert" hidden></p>
         </div>
+    @elseif($field['type'] === 'select')
+        <select id="{{ $id }}" name="{{ $name }}">@foreach($field['options'] as $option => $label)<option value="{{ $option }}" @selected((string)$value === (string)$option)>{{ $label }}</option>@endforeach</select>
     @elseif($field['type'] === 'textarea')
         <textarea id="{{ $id }}" name="{{ $name }}" rows="3" maxlength="5000" @if($hasError) aria-invalid="true" @endif>{{ $value }}</textarea>
         @if(str_contains($fieldLabel, 'Enter'))<small>Pemisah baris akan mengikuti susunan judul di website.</small>@endif
     @else
         <input id="{{ $id }}" name="{{ $name }}" value="{{ $value }}"
-            type="{{ in_array($field['type'], ['latitude','longitude']) ? 'number' : ($field['type'] === 'url' ? 'url' : 'text') }}"
+            type="{{ in_array($field['type'], ['latitude','longitude','number']) ? 'number' : (in_array($field['type'], ['url','email']) ? $field['type'] : 'text') }}"
+            @if($field['type'] === 'number') min="{{ $field['min'] ?? 0 }}" max="{{ $field['max'] ?? 100 }}" step="1" required @endif
             @if(in_array($field['type'], ['latitude','longitude'])) step="any" min="{{ $field['type'] === 'latitude' ? -90 : -180 }}" max="{{ $field['type'] === 'latitude' ? 90 : 180 }}" required @endif
             @if($hasError) aria-invalid="true" @endif
             maxlength="{{ $field['type'] === 'url' ? 2048 : 5000 }}">
     @endif
+    @if(!empty($field['hint']))<small>{{ $field['hint'] }}</small>@endif
     @error($dot)<span class="field-error">{{ $message }}</span>@enderror
     @error('uploads.'.$dot)<span class="field-error">{{ $message }}</span>@enderror
 </div>

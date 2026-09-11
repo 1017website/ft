@@ -1,4 +1,4 @@
-if (window.L) {
+if (window.L && document.getElementById('map')) {
 const cities=[...document.querySelectorAll('#cityList button')].map((button, index) => {
   const city = {key:String(index),city:button.dataset.city,region:button.dataset.region,lat:Number(button.dataset.lat),lng:Number(button.dataset.lng)};
   button.dataset.city = String(index);
@@ -21,7 +21,7 @@ document.querySelectorAll("#cityList button").forEach(btn=>btn.addEventListener(
   if(m){map.flyTo(m.getLatLng(),8,{duration:.8});setTimeout(()=>m.openPopup(),450);}
 }));
 window.addEventListener("load",()=>setTimeout(()=>map.invalidateSize(),180));
-} else {
+} else if (document.getElementById('map')) {
   document.getElementById('map').textContent = 'Peta tidak dapat dimuat. Periksa koneksi internet Anda.';
 }
 
@@ -76,3 +76,4 @@ document.getElementById("closeModal").addEventListener("click",()=>modal.classLi
 modal.addEventListener("click",e=>{if(e.target===modal)modal.classList.remove("show")});
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeVideo();modal.classList.remove('show');lightbox.classList.remove('show');}});
+document.querySelectorAll('a[href^="#"]').forEach(link=>{const target=link.getAttribute('href');if(target.length>1 && !document.getElementById(target.slice(1)))link.hidden=true;});

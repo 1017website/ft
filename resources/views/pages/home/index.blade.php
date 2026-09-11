@@ -5,15 +5,12 @@
 @endpush
 
 @section('content')
-@include('pages.home.sections.hero')
-@include('pages.home.sections.stats')
-@include('pages.home.sections.about')
-@include('pages.home.sections.services')
-@include('pages.home.sections.fleet')
-@include('pages.home.sections.network')
-@include('pages.home.sections.process')
-@include('pages.home.sections.gallery')
-@include('pages.home.sections.cta')
+@foreach(['hero','stats','about','services','fleet','network','process','gallery','cta'] as $homeSection)
+    @if(($content[$homeSection]['fields']['visible'] ?? '1') === '1' || (!empty($cmsPreview) && $previewSection === $homeSection))
+        @include('pages.home.sections.'.$homeSection)
+    @endif
+    @if($homeSection === 'hero' && $content['integrations']['fields']['ad_position'] === 'after_hero')@include('partials.advertisement')@endif
+@endforeach
 @endsection
 
 @push('modals')

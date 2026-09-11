@@ -5,11 +5,18 @@ function markDirty() {
     editor?.classList.add('is-dirty');
     const status = document.querySelector('[data-save-status]');
     if (status) status.textContent = 'Ada perubahan yang belum disimpan.';
+    editor?.dispatchEvent(new Event('cms:changed'));
 }
 editor?.addEventListener('input', markDirty);
 editor?.addEventListener('change', markDirty);
 window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
-editor?.addEventListener('submit', () => {
+editor?.addEventListener('submit', event => {
+    const files = [...editor.querySelectorAll('input[type=file]')].flatMap(input => [...input.files]);
+    if (files.length > 100 || files.reduce((total,file) => total+file.size,0) > 60*1024*1024) {
+        event.preventDefault();
+        document.querySelector('[data-save-status]').textContent = 'Terlalu banyak gambar sekaligus. Simpan maksimal 60 MB / 100 file per kali.';
+        return;
+    }
     dirty = false;
     const button = editor.querySelector('button[type="submit"]');
     button.disabled = true;
@@ -19,7 +26,7 @@ function refresh(repeater) {
     const items = [...repeater.querySelector('[data-items]').children];
     repeater.querySelector('[data-empty]').hidden = items.length > 0;
     repeater.querySelector('[data-item-count]').textContent = items.length;
-    repeater.querySelector('[data-add]').disabled = items.length >= 40;
+    repeater.querySelector('[data-add]').disabled = items.length >= 100;
     items.forEach((item, index) => {
         item.querySelector('[data-number]').textContent = index + 1;
         item.querySelector('[data-move="up"]').disabled = index === 0;
@@ -36,7 +43,7 @@ document.querySelectorAll('[data-repeater]').forEach(repeater => {
     undo.addEventListener('click', () => {
         if (!removed) return;
         const items = repeater.querySelector('[data-items]');
-        if (items.children.length >= 40) return;
+        if (items.children.length >= 100) return;
         items.insertBefore(removed.item, items.children[removed.index] || null);
         removed = null; undo.hidden = true; refresh(repeater); markDirty();
     });
@@ -45,7 +52,7 @@ document.querySelectorAll('[data-repeater]').forEach(repeater => {
         const button = event.target.closest('button');
         if (!button) return;
         const items = repeater.querySelector('[data-items]');
-        if (button.hasAttribute('data-add') && items.children.length < 40) {
+        if (button.hasAttribute('data-add') && items.children.length < 100) {
             const fragment = repeater.querySelector('template').content.cloneNode(true);
             const unique = `new${++serial}`;
             fragment.querySelectorAll('[name],[id],[for]').forEach(element => {
@@ -162,3 +169,49 @@ document.querySelector('[data-section-search]')?.addEventListener('input', event
 });
 if (editor?.dataset.dirty === 'true') markDirty();
 document.querySelector('.error-summary')?.focus();
+
+if (editor?.dataset.previewUrl) {
+    const frame = document.querySelector('[data-preview-frame]');
+    const screen = document.querySelector('.preview-screen');
+    const status = document.querySelector('[data-preview-status]');
+    let width = 1280, timer, controller, sequence = 0;
+    function resizePreview() {
+        const scale = Math.min(screen.clientWidth / width, 1);
+        frame.style.width = width+'px';
+        frame.style.height = screen.clientHeight / scale+'px';
+        frame.style.transform = `scale(${scale})`;
+    }
+    new ResizeObserver(resizePreview).observe(screen);
+    document.querySelectorAll('[data-preview-width]').forEach(button=>button.addEventListener('click',()=>{
+        width=Number(button.dataset.previewWidth);
+        document.querySelectorAll('[data-preview-width]').forEach(x=>{x.classList.toggle('active',x===button);x.setAttribute('aria-pressed',String(x===button));});
+        resizePreview();
+    }));
+    function seoPreview() {
+        [['title','[data-seo-title]'],['description','[data-seo-description]'],['canonical','[data-seo-url]']].forEach(([key,selector])=>{
+            const node=document.querySelector(selector), input=editor.elements.namedItem(`fields[${key}]`);
+            if(node && input)node.textContent=input.value;
+        });
+    }
+    async function refreshPreview() {
+        controller?.abort(); controller = new AbortController();
+        const current = ++sequence;
+        const data = new FormData(editor); data.set('_method','POST');
+        status.textContent='Memperbarui preview…'; seoPreview();
+        try {
+            const response=await fetch(editor.dataset.previewUrl,{method:'POST',body:data,signal:controller.signal,headers:{Accept:'application/json'}});
+            if(current!==sequence)return;
+            if(!response.ok){
+                const body=await response.json().catch(()=>({}));
+                status.textContent=Object.values(body.errors || {}).flat()[0] || 'Preview belum dapat dimuat. Periksa input, lalu klik Perbarui.';
+                return;
+            }
+            frame.srcdoc=await response.text();
+            status.textContent='Preview terbaru · belum dipublikasikan';
+            resizePreview();
+        } catch(error) {if(error.name!=='AbortError')status.textContent='Koneksi terputus. Klik Perbarui untuk mencoba lagi.';}
+    }
+    editor.addEventListener('cms:changed',()=>{clearTimeout(timer);timer=setTimeout(refreshPreview,650);});
+    document.querySelector('[data-preview-refresh]').addEventListener('click',()=>{clearTimeout(timer);refreshPreview();});
+    refreshPreview();
+}

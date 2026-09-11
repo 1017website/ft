@@ -170,6 +170,9 @@ textarea{min-height:100px}
 #videoPlayer iframe,#videoPlayer video{display:block;width:100%;height:min(56vw,520px);border:0}
 #videoPlayer>a{display:block;padding:20px;text-decoration:underline}
 [hidden]{display:none!important}
+.ad-placement{padding-top:22px;padding-bottom:22px}.ad-placement>small{display:block;color:#666;font-size:11px;margin-bottom:8px}
+.tracking-consent{position:fixed;bottom:20px;left:20px;right:20px;margin:auto;max-width:780px;z-index:3000;background:white;color:#222;border:1px solid #ccc;padding:20px;box-shadow:0 8px 30px #0002;display:flex;align-items:center;gap:24px}.tracking-consent strong{font-size:14px}.tracking-consent p{font-size:12px;margin:5px 0}.tracking-consent>div:last-child{display:flex;gap:8px}.tracking-consent button{padding:12px 18px;border:1px solid #333;background:#fff;cursor:pointer}.tracking-consent #consentAccept{background:#222;color:#fff}.tracking-preferences{position:fixed;right:12px;bottom:10px;z-index:2000;background:#fff;color:#333;border:1px solid #aaa;padding:8px 10px;font-size:10px;cursor:pointer}
+@media(max-width:600px){.tracking-consent{flex-direction:column;align-items:stretch;gap:12px;bottom:12px;left:12px;right:12px}.tracking-consent button{flex:1}}
 
 @media(max-width:1050px){
  .container{width:min(100% - 34px,1440px)}
