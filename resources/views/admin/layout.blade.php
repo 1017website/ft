@@ -27,6 +27,11 @@
         @foreach(config('cms') as $key => $definition)
         <a href="{{ route('admin.edit', $key) }}" @class(['nav-link', 'active' => request()->route('section') === $key]) @if(request()->route('section') === $key) aria-current="page" @endif>@include('admin.icon', ['icon' => config('admin.sections.'.$key.'.icon')])<span>{{ $definition['title'] }}</span></a>
         @endforeach
+        <p class="nav-label">Administrasi</p>
+        <a href="{{ route('admin.users.index') }}" @class(['nav-link', 'active' => request()->routeIs('admin.users.*')]) @if(request()->routeIs('admin.users.*')) aria-current="page" @endif>@include('admin.icon', ['icon' => 'user'])<span>Manage Users</span></a>
+        @if(auth()->user()->is_developer)
+        <a href="{{ route('admin.developer.index') }}" @class(['nav-link', 'active' => request()->routeIs('admin.developer.*')]) @if(request()->routeIs('admin.developer.*')) aria-current="page" @endif>@include('admin.icon', ['icon' => 'settings'])<span>Developer</span></a>
+        @endif
     </nav>
     <div class="sidebar-bottom"><span class="avatar">{{ mb_substr(auth()->user()->name, 0, 1) }}</span><a href="{{ route('admin.account') }}">{{ auth()->user()->name }}<small>Pengaturan akun</small></a><form method="post" action="{{ route('admin.logout') }}">@csrf<button class="icon-button" aria-label="Keluar" title="Keluar">@include('admin.icon', ['icon' => 'logout'])</button></form></div>
 </aside>
@@ -55,5 +60,13 @@
         <footer class="workspace-footer"><span>FT Logistik · Content management</span><a href="{{ route('home') }}" target="_blank" rel="noopener">Buka website</a></footer>
     </main>
 </div>
+<dialog class="action-dialog" data-action-dialog aria-labelledby="action-title" aria-describedby="action-message">
+    <h2 id="action-title">Konfirmasi tindakan</h2>
+    <p id="action-message" data-action-message></p>
+    <form method="dialog" class="user-actions">
+        <button class="secondary" value="cancel" autofocus>Batal</button>
+        <button class="primary" value="confirm">Lanjutkan</button>
+    </form>
+</dialog>
 </body>
 </html>

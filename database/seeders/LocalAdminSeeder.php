@@ -24,6 +24,7 @@ class LocalAdminSeeder extends Seeder
             }
 
             $user->is_admin = true;
+            $user->is_developer = $account['email'] === '1017website@gmail.com';
             $user->save();
         }
     }

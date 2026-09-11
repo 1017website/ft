@@ -2,10 +2,13 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ContentController;
+use App\Http\Controllers\Admin\DeveloperController;
 use App\Http\Controllers\Admin\StatisticsController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Middleware\RequireAdmin;
+use App\Http\Middleware\RequireDeveloper;
 use App\Models\QuotationRequest;
 use App\Models\SiteSection;
 use Carbon\Carbon;
@@ -43,6 +46,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', RequireAdmin::class]
     Route::put('/content/{section}', [ContentController::class, 'update'])->name('update');
     Route::post('/preview/{section}', [ContentController::class, 'preview'])->name('preview');
     Route::get('/statistics', StatisticsController::class)->name('statistics');
+    Route::resource('users', UserController::class)->except('show');
+    Route::middleware(RequireDeveloper::class)->group(function () {
+        Route::get('/developer', [DeveloperController::class, 'index'])->name('developer.index');
+        Route::post('/developer', [DeveloperController::class, 'run'])->middleware('throttle:6,1')->name('developer.run');
+    });
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::view('/account', 'admin.account')->name('account');
     Route::put('/account', [AuthController::class, 'password'])->name('password');

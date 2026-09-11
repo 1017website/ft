@@ -1,4 +1,30 @@
 const editor = document.querySelector('[data-editor]');
+const actionDialog = document.querySelector('[data-action-dialog]');
+let pendingAction = null;
+actionDialog?.addEventListener('close', () => {
+    const form = pendingAction;
+    pendingAction = null;
+    if (actionDialog.returnValue === 'confirm' && form) {
+        form.dataset.confirmed = 'true';
+        form.requestSubmit();
+    }
+});
+document.querySelectorAll('[data-action-form]').forEach(form => {
+    form.addEventListener('submit', event => {
+        if (form.dataset.confirm && form.dataset.confirmed !== 'true') {
+            event.preventDefault();
+            pendingAction = form;
+            actionDialog.querySelector('[data-action-message]').textContent = form.dataset.confirm;
+            actionDialog.returnValue = '';
+            actionDialog.showModal();
+            return;
+        }
+        const button = form.querySelector('button');
+        button.disabled = true;
+        button.textContent = 'Memproses…';
+        form.setAttribute('aria-busy', 'true');
+    });
+});
 let dirty = false;
 function markDirty() {
     dirty = true;
